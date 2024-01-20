@@ -27,20 +27,16 @@ const StyledArrowButton = styled.button`
 
 const StyledDateWrap = styled.div`
   text-align: center;
+  border-radius: 1rem;
 `;
 
-const WeeklyCalander = ({ getSelectedDate, todoList }) => {
+const WeeklyCalander = ({ selectedDate, setSelectedDate, todos }) => {
   // 상태 변수: 선택된 날짜
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [weekDays, setWeekDays] = useState(getWeekDays(selectedDate));
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
-  console.log("todoList", todoList);
-
-  useEffect(() => {
-    getSelectedDate(selectedDate);
-  }, [selectedDate]);
 
   const isToday = (date) => {
     const today = new Date();
@@ -50,6 +46,18 @@ const WeeklyCalander = ({ getSelectedDate, todoList }) => {
       date.getFullYear() === today.getFullYear()
     );
   };
+
+  //
+  useEffect(() => {
+    const newWeekDays = getWeekDays(selectedDate);
+
+    todos.forEach((todo) => {
+      const dayIndex = todo.date.getDay() - 1;
+      newWeekDays[dayIndex].todosCount++;
+    });
+    setWeekDays(newWeekDays);
+  }, [todos, selectedDate]);
+  //
 
   const handlePrevWeek = () => {
     const newStartDate = new Date(selectedDate);
@@ -81,19 +89,24 @@ const WeeklyCalander = ({ getSelectedDate, todoList }) => {
         </div>
       </div>
       <StyledCalander>
-        {getWeekDays(selectedDate).map((dayInfo) => (
-          <StyledDateWrap style={{ width: "100px" }} key={dayInfo.day}>
+        {weekDays.map((dayInfo) => (
+          <StyledDateWrap
+            onClick={() => {
+              handleDateChange(dayInfo.date);
+            }}
+            style={{
+              width: "100px",
+
+              ...(selectedDate.getDay() === dayInfo.date.getDay() && {
+                backgroundColor: "yellow",
+              }),
+            }}
+            key={dayInfo.day}
+          >
             <p>{dayInfo.day}</p>
-            <StyledDateButton>{}</StyledDateButton>
+            <StyledDateButton>{dayInfo.todosCount}</StyledDateButton>
             {isToday(dayInfo.date) ? (
-              <div
-                onClick={() => {
-                  handleDateChange(dayInfo.date);
-                }}
-                style={{ color: "red" }}
-              >
-                {dayInfo.date.getDate()}
-              </div>
+              <div onClick={() => {}}>{dayInfo.date.getDate()}</div>
             ) : (
               <div
                 onClick={() => {
