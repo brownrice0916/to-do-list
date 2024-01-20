@@ -1,3 +1,4 @@
+import { getWeekDays } from "\bcommon/date";
 import useFirestore from "hooks/useFirestore";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
@@ -53,9 +54,11 @@ const StyledDoneDiv = styled.div`
 `;
 
 const StyledBtnWrap = styled.div``;
-const ToDoList = ({ selectedDate }) => {
+const ToDoList = ({ selectedDate, getTodoList }) => {
   const [todos, setTodos] = useState([]);
   const [nextIndex, setNextIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("all");
+  const [weeklyDate, setWeeklyDate] = useState();
 
   const {
     data,
@@ -64,7 +67,7 @@ const ToDoList = ({ selectedDate }) => {
     deleteDocument,
     updateDocument,
     getCollectionData,
-  } = useFirestore("todolist", selectedDate.toLocaleDateString("ko-KR"));
+  } = useFirestore("todolist", selectedDate);
 
   const handleAddTodo = () => {
     setTodos([
@@ -72,7 +75,7 @@ const ToDoList = ({ selectedDate }) => {
       {
         value: "",
         isEditing: true,
-        date: selectedDate.toLocaleDateString("ko-KR"),
+        date: selectedDate,
         isDone: false,
         isAdded: false,
         index: nextIndex,
@@ -86,6 +89,17 @@ const ToDoList = ({ selectedDate }) => {
       setTodos(data);
     }
   }, [data, loading]);
+
+  useEffect(() => {
+    getTodoList(todos);
+  }, [todos, getTodoList]);
+
+  useEffect(() => {
+    const weeklyDate = [0, 0, 0, 0, 0, 0, 0];
+    todos.forEach((todo) => {
+      console.log(todo.date);
+    });
+  }, []);
 
   const handleInputChange = (index, value) => {
     const newTodoList = todos.map((todo, i) => {
@@ -115,7 +129,7 @@ const ToDoList = ({ selectedDate }) => {
 
       try {
         const newTodoId = await addDocument(value);
-        await getCollectionData(selectedDate.toLocaleDateString("ko-KR"));
+        await getCollectionData(selectedDate, "index");
         const addedTodo = data.find((todo) => todo.id === newTodoId);
 
         if (addedTodo) {
@@ -146,9 +160,9 @@ const ToDoList = ({ selectedDate }) => {
         <StyledButton onClick={handleAddTodo} className="text-center">
           To Do List +
         </StyledButton>
-        <StyledProgressBtn>전체</StyledProgressBtn>
-        <StyledProgressBtn>진행중</StyledProgressBtn>
-        <StyledProgressBtn>완료</StyledProgressBtn>
+        {["전체", "진행중", "완료"].map((status, index) => (
+          <StyledProgressBtn>{status}</StyledProgressBtn>
+        ))}
         {todos &&
           todos.map((todo, index) => (
             <StyledListContainer key={index}>

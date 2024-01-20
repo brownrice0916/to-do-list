@@ -19,23 +19,33 @@ const useFirestore = (collectionName, selectedDate) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const startDate = new Date(selectedDate);
+        const endDate = new Date(selectedDate);
+
+        startDate.setDate(selectedDate.getDate() - (selectedDate.getDay() - 1)); // Monday
+        endDate.setDate(selectedDate.getDate() + (7 - selectedDate.getDay())); // Thursday
+
+        // Fetch data within the date range (Monday to Thursday)
         const querySnapshot = await getDocs(
           query(
             collection(db, collectionName),
-            where("date", "==", selectedDate),
-            orderBy("index")
+            where("date", ">=", startDate),
+            where("date", "<=", endDate),
+            orderBy("date")
           )
         );
+
         const documents = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         // Filter documents based on the selectedDate
-        const filteredData = documents.filter((item) => {
-          // Assuming your data has a 'date' property
-          return item.date === selectedDate;
-        });
-        setData(filteredData);
+        // const filteredData = documents.filter((item) => {
+        //   // Assuming your data has a 'date' property
+        //   return item.date === selectedDate;
+        // });
+        setData(documents);
+        console.log("filteredData", documents);
         setLoading(false);
         console.log("Data fetched successfully");
       } catch (error) {
@@ -76,14 +86,14 @@ const useFirestore = (collectionName, selectedDate) => {
     }
   };
 
-  const getCollectionData = async (selectedDate) => {
+  const getCollectionData = async (selectedDate, orderBy) => {
     try {
       // 특정 날짜에 해당하는 데이터만 가져오기 위한 쿼리 작성
       const querySnapshot = await getDocs(
         query(
           collection(db, collectionName),
           where("date", "==", selectedDate),
-          orderBy("index")
+          orderBy(orderBy)
         )
       );
 

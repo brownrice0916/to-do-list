@@ -31,24 +31,36 @@ const StyledProfileImg = styled.div`
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [todoList, setTodoList] = useState([]);
   const getSelectedDate = (date) => {
     setSelectedDate(date);
   };
+  const getTodoList = (todos) => {
+    setTodoList(todos);
+  };
+
   return (
     <LayoutContainer className="layout">
       <LeftSection>
         <p>프사</p>
         <StyledProfileImg></StyledProfileImg>
         <p>상태메세지</p>
-        <p></p>
+        <p>아잉뿌잉뀨</p>
+        <input type="text" placeholder="상태메세지를 입력하세요" />
       </LeftSection>
 
       <RightSection>
         <div>
-          <WeeklyCalander getSelectedDate={getSelectedDate}></WeeklyCalander>
+          <WeeklyCalander
+            todoList={todoList}
+            getSelectedDate={getSelectedDate}
+          ></WeeklyCalander>
         </div>
 
-        <TodoList selectedDate={selectedDate}></TodoList>
+        <TodoList
+          getTodoList={getTodoList}
+          selectedDate={selectedDate}
+        ></TodoList>
       </RightSection>
     </LayoutContainer>
   );
