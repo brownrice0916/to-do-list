@@ -93,7 +93,7 @@ const ToDoList = ({
     const newTodos = todos.map((todo) =>
       todo.docId === docId ? { ...todo, isEditing: !todo.isEditing } : todo
     );
-    updateDocument(docId, { ...newTodo, isDone: !newTodo.isEditing });
+    updateDocument(docId, { ...newTodo, isEditing: !newTodo.isEditing });
     setTodos(newTodos);
   };
 
