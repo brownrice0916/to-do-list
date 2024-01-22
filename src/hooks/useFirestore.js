@@ -20,9 +20,7 @@ const useFirestore = (collectionName, selectedDate, setTodos) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const newSelectedDate = new Date(selectedDate);
-
-        newSelectedDate.setHours(0, 0, 0, 0);
+        const newSelectedDate = new Date(selectedDate.toDateString());
 
         const startDate = new Date(newSelectedDate);
         const endDate = new Date(newSelectedDate);

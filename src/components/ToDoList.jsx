@@ -1,30 +1,9 @@
-import { getWeekDays } from "\bcommon/date";
-import useFirestore from "hooks/useFirestore";
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import { v4 as uuidv4 } from "uuid";
 import { FaEdit } from "react-icons/fa";
 import { GiConfirmed } from "react-icons/gi";
 import { MdDelete } from "react-icons/md";
 import { IoCheckbox } from "react-icons/io5";
-const StyledButton = styled.button`
-  background-color: #000;
-  color: #fff;
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-bottom: 30px;
-  margin-right: 10px;
-`;
-
-const StyledProgressBtn = styled.button`
-  border: 1px solid #000;
-  margin-left: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-`;
 
 const StyledInputWrap = styled.div`
   flex: 1;
@@ -50,6 +29,9 @@ const StyledInput = styled.input`
   align-items: center;
   padding-left: 10px;
   border-radius: 10px;
+  box-shadow: 5px 5px 5px 2px #ccc;
+  border: none;
+  font-size: 1.2rem;
 `;
 
 const StyledCheckBox = styled.button`
@@ -80,64 +62,24 @@ const StyledDoneDiv = styled.div`
   align-items: center;
   padding-left: 10px;
   border-radius: 10px;
+  font-size: 1rem;
 `;
 
 const StyledBtnWrap = styled.div``;
-const ToDoList = ({ todos, setTodos, selectedDate }) => {
-  // const [todos, setTodos] = useState([]);
 
-  const [activeTab, setActiveTab] = useState("전체");
-
-  const { addDocument, deleteDocument, updateDocument } = useFirestore(
-    "todolist",
-    selectedDate,
-    setTodos
-  );
-
-  const handleAddTodo = async () => {
-    const newSelectedDate = new Date(selectedDate);
-    newSelectedDate.setHours(0, 0, 0, 0);
-
-    const newTodo = {
-      value: "",
-      isEditing: true,
-      date: newSelectedDate,
-      isDone: false,
-      isAdded: false,
-      createdAt: new Date(),
-    };
-
-    const docId = await addDocument(newTodo);
-
-    newTodo.docId = docId;
-
-    setTodos([...todos, newTodo]);
-    //setTodos([...todos, ""]);
-  };
-
-  const filteredTodos = useMemo(() => {
-    const currentDayIndex = selectedDate.getDay();
-
-    let filteredTodos = todos.filter((todo) => {
-      return todo.date.getDay() === currentDayIndex;
-    });
-    if (activeTab === "진행중") {
-      filteredTodos = filteredTodos.filter((todo) => !todo.isDone);
-    } else if (activeTab === "완료") {
-      filteredTodos = filteredTodos.filter((todo) => todo.isDone);
-    }
-
-    return filteredTodos;
-  }, [selectedDate, todos, activeTab]);
-
+const ToDoList = ({
+  todo,
+  todos,
+  setTodos,
+  deleteDocument,
+  updateDocument,
+}) => {
   const handleInputChange = (docId, value) => {
     // setCurrentInput(value);
-    const newTodoList = todos.map((todo) => {
-      if (todo.docId === docId) {
-        return { ...todo, value: value };
-      }
-      return todo;
-    });
+    const newTodoList = todos.map((todo) =>
+      todo.docId === docId ? { ...todo, value: value } : todo
+    );
+
     setTodos(newTodoList);
   };
 
@@ -148,101 +90,62 @@ const ToDoList = ({ todos, setTodos, selectedDate }) => {
   };
 
   const finishEditing = async (docId, newTodo) => {
-    //newTodo.isEditing = !newTodo.isEditing;
-    // newTodo.isAdded = true;
-
-    const newTodos = todos.map((todo) => {
-      if (todo.docId === docId) {
-        todo.isEditing = !todo.isEditing;
-        return newTodo;
-      }
-      return todo;
-    });
+    const newTodos = todos.map((todo) =>
+      todo.docId === docId ? { ...todo, isEditing: !todo.isEditing } : todo
+    );
     updateDocument(docId, { ...newTodo, isDone: !newTodo.isEditing });
     setTodos(newTodos);
   };
 
   const finishTodo = (docId, newTodo) => {
-    const newTodos = todos.map((todo) => {
-      if (todo.docId === docId) {
-        return { ...todo, isDone: !todo.isDone };
-      }
-      return todo;
-    });
+    const newTodos = todos.map((todo) =>
+      todo.docId === docId ? { ...todo, isDone: !todo.isDone } : todo
+    );
     updateDocument(docId, { ...newTodo, isDone: !newTodo.isDone });
     setTodos(newTodos);
   };
 
-  const stateChangeHandler = (status) => {
-    setActiveTab(status);
-  };
   return (
-    <>
-      {" "}
-      <div>
-        <StyledButton onClick={handleAddTodo} className="text-center">
-          To Do List +
-        </StyledButton>
-        {["전체", "진행중", "완료"].map((status, index) => (
-          <StyledProgressBtn
-            onClick={() => {
-              stateChangeHandler(status);
-            }}
-            style={status === activeTab ? { backgroundColor: "yellow" } : {}}
-            key={index}
-          >
-            {status}
-          </StyledProgressBtn>
-        ))}
-        {filteredTodos &&
-          filteredTodos.map((todo, index) => (
-            <StyledListContainer key={index}>
-              <StyledInputWrap>
-                <StyledCheckBox>
-                  <IoCheckbox
-                    onClick={() => finishTodo(todo.docId, todo)}
-                    style={todo.isDone ? { color: "red" } : { color: "black" }}
-                  />
-                </StyledCheckBox>
+    <StyledListContainer>
+      <StyledInputWrap>
+        <StyledCheckBox>
+          <IoCheckbox
+            onClick={() => finishTodo(todo.docId, todo)}
+            style={todo.isDone ? { color: "#ffd400" } : { color: "#999" }}
+          />
+        </StyledCheckBox>
 
-                {todo.isEditing ? (
-                  <StyledInput
-                    type="text"
-                    value={todo.value}
-                    onChange={(e) =>
-                      handleInputChange(todo.docId, e.target.value)
-                    }
-                  />
-                ) : (
-                  <StyledDoneDiv
-                    style={
-                      todo.isDone
-                        ? { textDecoration: "line-through" }
-                        : { textDecoration: "none" }
-                    }
-                  >
-                    {todo.value}
-                  </StyledDoneDiv>
-                )}
-              </StyledInputWrap>
-              <StyledBtnWrap>
-                <StyledConfirmBtn
-                  onClick={() => finishEditing(todo.docId, todo)}
-                >
-                  {todo.isEditing ? <GiConfirmed /> : <FaEdit />}
-                </StyledConfirmBtn>
-                <StyledCancelBtn
-                  onClick={() => {
-                    deleteTodo(todo.docId);
-                  }}
-                >
-                  <MdDelete />
-                </StyledCancelBtn>
-              </StyledBtnWrap>
-            </StyledListContainer>
-          ))}
-      </div>
-    </>
+        {todo.isEditing ? (
+          <StyledInput
+            type="text"
+            value={todo.value}
+            onChange={(e) => handleInputChange(todo.docId, e.target.value)}
+          />
+        ) : (
+          <StyledDoneDiv
+            style={
+              todo.isDone
+                ? { textDecoration: "line-through" }
+                : { textDecoration: "none" }
+            }
+          >
+            {todo.value}
+          </StyledDoneDiv>
+        )}
+      </StyledInputWrap>
+      <StyledBtnWrap>
+        <StyledConfirmBtn onClick={() => finishEditing(todo.docId, todo)}>
+          {todo.isEditing ? <GiConfirmed /> : <FaEdit />}
+        </StyledConfirmBtn>
+        <StyledCancelBtn
+          onClick={() => {
+            deleteTodo(todo.docId);
+          }}
+        >
+          <MdDelete />
+        </StyledCancelBtn>
+      </StyledBtnWrap>
+    </StyledListContainer>
   );
 };
 

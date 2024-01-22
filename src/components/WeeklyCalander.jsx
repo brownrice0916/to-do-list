@@ -1,7 +1,8 @@
 import { getWeekDays } from "\bcommon/date";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-
+import { IoIosArrowBack } from "react-icons/io";
+import { IoIosArrowForward } from "react-icons/io";
 const CalanderContainer = styled.div`
   flex: 1;
   margin-bottom: 30px;
@@ -23,6 +24,10 @@ const StyledDateButton = styled.button`
 
 const StyledArrowButton = styled.button`
   cursor: pointer;
+  & > svg {
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
 `;
 
 const StyledDateWrap = styled.div`
@@ -50,9 +55,9 @@ const WeeklyCalander = ({ selectedDate, setSelectedDate, todos }) => {
   //
   useEffect(() => {
     const newWeekDays = getWeekDays(selectedDate);
-
     todos.forEach((todo) => {
-      const dayIndex = todo.date.getDay() - 1;
+      const dayIndex = todo.date.getDay() === 0 ? 6 : todo.date.getDay() - 1;
+
       newWeekDays[dayIndex].todosCount++;
     });
     setWeekDays(newWeekDays);
@@ -71,6 +76,12 @@ const WeeklyCalander = ({ selectedDate, setSelectedDate, todos }) => {
     setSelectedDate(newStartDate);
   };
 
+  const getMonthAndWeek = () => {
+    const selectedMonth = selectedDate.getMonth() + 1;
+    const selectedWeek = Math.ceil(selectedDate.getDate() / 7);
+    return `${selectedMonth}월 ${selectedWeek}주차`;
+  };
+
   return (
     <CalanderContainer>
       <div
@@ -82,10 +93,14 @@ const WeeklyCalander = ({ selectedDate, setSelectedDate, todos }) => {
           fontWeight: 800,
         }}
       >
-        <div> {new Date().getMonth() + 1}월</div>
+        <div> {getMonthAndWeek()}</div>
         <div>
-          <StyledArrowButton onClick={handlePrevWeek}>&lt; </StyledArrowButton>
-          <StyledArrowButton onClick={handleNextWeek}> &gt;</StyledArrowButton>
+          <StyledArrowButton onClick={handlePrevWeek}>
+            <IoIosArrowBack />
+          </StyledArrowButton>
+          <StyledArrowButton onClick={handleNextWeek}>
+            <IoIosArrowForward />
+          </StyledArrowButton>
         </div>
       </div>
       <StyledCalander>
@@ -94,17 +109,19 @@ const WeeklyCalander = ({ selectedDate, setSelectedDate, todos }) => {
             onClick={() => {
               handleDateChange(dayInfo.date);
             }}
-            style={{
-              width: "100px",
-
-              ...(selectedDate.getDay() === dayInfo.date.getDay() && {
-                backgroundColor: "yellow",
-              }),
-            }}
+            style={{ width: "100%" }}
             key={dayInfo.day}
           >
             <p>{dayInfo.day}</p>
-            <StyledDateButton>{dayInfo.todosCount}</StyledDateButton>
+            <StyledDateButton
+              style={{
+                ...(selectedDate.getDay() === dayInfo.date.getDay() && {
+                  backgroundColor: "#ffd400",
+                }),
+              }}
+            >
+              {dayInfo.todosCount}
+            </StyledDateButton>
             {isToday(dayInfo.date) ? (
               <div onClick={() => {}}>{dayInfo.date.getDate()}</div>
             ) : (
