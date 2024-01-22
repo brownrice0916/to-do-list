@@ -31,7 +31,7 @@ const StyledInput = styled.input`
   border-radius: 10px;
   box-shadow: 5px 5px 5px 2px #ccc;
   border: none;
-  font-size: 1.2rem;
+  font-size: 1rem;
 `;
 
 const StyledCheckBox = styled.button`
