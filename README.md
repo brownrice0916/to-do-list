@@ -14,3 +14,6 @@ Firebase
 ```
 yarn start
 ```
+```
+npm start
+```
