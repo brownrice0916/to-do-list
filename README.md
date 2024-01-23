@@ -9,3 +9,8 @@
 React
 Firebase
 
+
+## 실행방법
+```
+yarn start
+```
